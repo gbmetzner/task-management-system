@@ -1,4 +1,4 @@
-package com.gbm.task_api;
+package com.gbm.taskapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class TaskApiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(TaskApiApplication.class, args);
-	}
-
+  static void main(String[] args) {
+    SpringApplication.run(TaskApiApplication.class, args);
+  }
 }
