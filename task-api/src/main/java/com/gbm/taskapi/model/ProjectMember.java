@@ -10,19 +10,20 @@ import org.hibernate.annotations.CreationTimestamp;
 @Data
 public class ProjectMember {
 
-  @EmbeddedId private ProjectMemberId id;
+    @EmbeddedId
+    private ProjectMemberId id;
 
-  @ManyToOne
-  @MapsId("memberId")
-  @JoinColumn(name = "member_id", nullable = false)
-  private User member;
+    @ManyToOne
+    @MapsId("memberId")
+    @JoinColumn(name = "member_id", nullable = false)
+    private User member;
 
-  @ManyToOne
-  @MapsId("projectId")
-  @JoinColumn(name = "project_id", nullable = false)
-  private Project project;
+    @ManyToOne
+    @MapsId("projectId")
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
-  @CreationTimestamp
-  @Column(name = "joined_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-  private OffsetDateTime joinedAt;
+    @CreationTimestamp
+    @Column(name = "joined_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime joinedAt;
 }

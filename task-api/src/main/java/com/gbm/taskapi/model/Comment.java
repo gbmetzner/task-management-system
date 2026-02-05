@@ -11,27 +11,27 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "comments", schema = "tms")
 @Data
 public class Comment {
-  @Id
-  @Tsid
-  @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
-  private Long id;
+    @Id
+    @Tsid
+    @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
+    private Long id;
 
-  @Column(name = "content", nullable = false, columnDefinition = "TEXT")
-  private String content;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
 
-  @ManyToOne
-  @JoinColumn(name = "task_id", nullable = false)
-  private Task task;
+    @ManyToOne
+    @JoinColumn(name = "task_id", nullable = false)
+    private Task task;
 
-  @ManyToOne
-  @JoinColumn(name = "author_id", nullable = false)
-  private User author;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
-  @CreationTimestamp
-  @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-  private OffsetDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime createdAt;
 
-  @UpdateTimestamp
-  @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-  private OffsetDateTime updatedAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime updatedAt;
 }

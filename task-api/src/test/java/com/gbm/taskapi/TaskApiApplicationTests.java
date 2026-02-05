@@ -6,6 +6,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class TaskApiApplicationTests extends TestContainerSupport {
 
-  @Test
-  void contextLoads() {}
+    @Test
+    void contextLoads() {}
 }
