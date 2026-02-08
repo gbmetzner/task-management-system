@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "projects", schema = "tms")
@@ -18,10 +20,10 @@ public class Project {
     @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 255, columnDefinition = "VARCHAR(255)")
+    @Column(name = "name", nullable = false, columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @Column(name = "description", nullable = false, length = 255, columnDefinition = "VARCHAR(255)")
+    @Column(name = "description", nullable = false, columnDefinition = "VARCHAR(255)")
     private String description;
 
     @ManyToOne
@@ -32,7 +34,8 @@ public class Project {
     private List<ProjectMember> members;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", nullable = false, length = 20, columnDefinition = "PROJECT_STATUS")
     private ProjectStatus status;
 
     @CreationTimestamp

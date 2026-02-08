@@ -6,7 +6,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "tasks", schema = "tms")
@@ -17,7 +19,7 @@ public class Task {
     @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 255, columnDefinition = "VARCHAR(255)")
+    @Column(name = "title", nullable = false, columnDefinition = "VARCHAR(255)")
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -36,11 +38,13 @@ public class Task {
     private User reporter;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", nullable = false, length = 20, columnDefinition = "TASK_STATUS")
     private TaskStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "priority", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "priority", nullable = false, length = 20, columnDefinition = "TASK_PRIORITY")
     private TaskPriority priority;
 
     @CreationTimestamp

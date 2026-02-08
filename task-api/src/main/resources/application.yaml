@@ -1,6 +1,8 @@
 spring:
   application:
     name: task-api
+  jpa:
+    open-in-view: false
   datasource:
     url: jdbc:postgresql://localhost:5432/task-db
     username: postgres
@@ -12,3 +14,7 @@ spring:
     validate-on-migrate: true
     schemas: tms
     create-schemas: true
+
+jwt:
+  secret: ${JWT_SECRET:bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25UaGF0SXNBdExlYXN0MjU2Qml0c0xvbmVGb3JIUzI1NkFsZ29yaXRobQ==}
+  expiration: ${JWT_EXPIRATION:86400000}

@@ -1,8 +1,6 @@
 spring:
   flyway:
     clean-disabled: false
-  jpa:
-    show-sql: true
 jwt:
   secret: bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25UaGF0SXNBdExlYXN0MjU2Qml0c0xvbmVGb3JIUzI1NkFsZ29yaXRobQ==
   expiration: 86400000

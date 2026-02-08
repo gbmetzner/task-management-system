@@ -20,16 +20,16 @@ public class User {
     @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
     private Long id;
 
-    @Column(name = "email", unique = true, nullable = false, length = 255, columnDefinition = "VARCHAR(255)")
+    @Column(name = "email", unique = true, nullable = false, columnDefinition = "VARCHAR(255)")
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255, columnDefinition = "VARCHAR(255)")
+    @Column(name = "password", nullable = false, columnDefinition = "VARCHAR(255)")
     private String password;
 
-    @Column(name = "firstname", length = 100, columnDefinition = "VARCHAR(255)")
+    @Column(name = "firstname", length = 100, columnDefinition = "VARCHAR(100)")
     private String firstName;
 
-    @Column(name = "lastname", length = 100, columnDefinition = "VARCHAR(255)")
+    @Column(name = "lastname", length = 100, columnDefinition = "VARCHAR(100)")
     private String lastName;
 
     @Enumerated(EnumType.STRING)
