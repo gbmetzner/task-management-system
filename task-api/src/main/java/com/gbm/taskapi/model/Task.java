@@ -1,23 +1,19 @@
 package com.gbm.taskapi.model;
 
-import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.List;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "tasks", schema = "tms")
-@Data
-public class Task {
-    @Id
-    @Tsid
-    @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
-    private Long id;
+@Getter
+@Setter
+public class Task extends BaseEntity {
 
     @Column(name = "title", nullable = false, columnDefinition = "VARCHAR(255)")
     private String title;
@@ -47,14 +43,6 @@ public class Task {
     @Column(name = "priority", nullable = false, length = 20, columnDefinition = "TASK_PRIORITY")
     private TaskPriority priority;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime updatedAt;
-
     @Column(name = "due_date", columnDefinition = "TIMESTAMPTZ")
     private OffsetDateTime dueDate;
 
@@ -63,4 +51,15 @@ public class Task {
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     private List<Comment> comments;
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Task task)) return false;
+        return Objects.equals(getId(), task.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

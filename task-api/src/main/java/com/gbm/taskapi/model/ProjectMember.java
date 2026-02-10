@@ -2,12 +2,15 @@ package com.gbm.taskapi.model;
 
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
-import lombok.Data;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "project_members", schema = "tms")
-@Data
+@Getter
+@Setter
 public class ProjectMember {
 
     @EmbeddedId
@@ -26,4 +29,15 @@ public class ProjectMember {
     @CreationTimestamp
     @Column(name = "joined_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
     private OffsetDateTime joinedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ProjectMember projectMember)) return false;
+        return Objects.equals(getId(), projectMember.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

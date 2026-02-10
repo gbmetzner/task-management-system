@@ -11,7 +11,7 @@
 	</parent>
 
 	<properties>
-		<jsonwebtoken.version>0.11.5</jsonwebtoken.version>
+		<jsonwebtoken.version>0.13.0</jsonwebtoken.version>
 	</properties>
 
 	<artifactId>task-api</artifactId>
@@ -55,6 +55,7 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>${jsonwebtoken.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

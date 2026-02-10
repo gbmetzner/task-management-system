@@ -1,20 +1,15 @@
 package com.gbm.taskapi.model;
 
-import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
-import java.time.OffsetDateTime;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "comments", schema = "tms")
-@Data
-public class Comment {
-    @Id
-    @Tsid
-    @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
-    private Long id;
+@Getter
+@Setter
+public class Comment extends BaseEntity {
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
@@ -27,11 +22,14 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime createdAt;
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Comment comment)) return false;
+        return Objects.equals(getId(), comment.getId());
+    }
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime updatedAt;
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

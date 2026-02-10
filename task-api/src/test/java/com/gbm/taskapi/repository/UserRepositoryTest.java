@@ -3,25 +3,23 @@ package com.gbm.taskapi.repository;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.gbm.taskapi.TestContainerSupport;
+import com.gbm.taskapi.config.TaskAppConfig;
 import com.gbm.taskapi.model.Role;
 import com.gbm.taskapi.model.User;
 import java.util.Optional;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 @DataJpaTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(TaskAppConfig.class)
 public class UserRepositoryTest extends TestContainerSupport {
 
     @Autowired
     UserRepository userRepository;
 
     @Test
-    @Order(1)
     public void testSaveUser() {
         // Given
         User user = new User();
@@ -41,7 +39,6 @@ public class UserRepositoryTest extends TestContainerSupport {
     }
 
     @Test
-    @Order(2)
     public void testFindByEmail() {
         // Given
         User user = new User();
@@ -59,7 +56,6 @@ public class UserRepositoryTest extends TestContainerSupport {
     }
 
     @Test
-    @Order(3)
     public void testExistsByEmail() {
         // Given
         User user = new User();

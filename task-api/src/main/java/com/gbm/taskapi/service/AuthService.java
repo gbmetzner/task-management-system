@@ -1,11 +1,10 @@
 package com.gbm.taskapi.service;
 
-import com.gbm.taskapi.dto.TokenInfoDto;
+import com.gbm.taskapi.dto.TokenInfo;
 import com.gbm.taskapi.dto.request.LoginRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
 import com.gbm.taskapi.dto.response.AuthResponse;
 import com.gbm.taskapi.exception.BadRequestException;
-import com.gbm.taskapi.exception.ResourceNotFoundException;
 import com.gbm.taskapi.model.Role;
 import com.gbm.taskapi.model.User;
 import com.gbm.taskapi.repository.UserRepository;
@@ -44,34 +43,38 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         // Generate JWT token
-        var tokenInfo = TokenInfoDto.builder()
+        var tokenInfo = TokenInfo.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
+                .role(user.getRole())
                 .build();
         String token = jwtTokenProvider.generateToken(tokenInfo);
 
         return new AuthResponse(
-                token, savedUser.getId(), savedUser.getEmail(), savedUser.getFirstName(), savedUser.getLastName());
+                token,
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getFirstName(),
+                savedUser.getLastName(),
+                savedUser.getRole());
     }
 
     public AuthResponse login(LoginRequest request) {
         // Find user by email
         User user = userRepository
                 .findByEmail(request.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
-
-        // Check password
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new BadRequestException("Invalid email or password");
-        }
+                .filter(found -> (passwordEncoder.matches(request.password(), found.getPassword())))
+                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         // Generate JWT token
-        var tokenInfo = TokenInfoDto.builder()
+        var tokenInfo = TokenInfo.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
+                .role(user.getRole())
                 .build();
         String token = jwtTokenProvider.generateToken(tokenInfo);
 
-        return new AuthResponse(token, user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
+        return new AuthResponse(
+                token, user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.getRole());
     }
 }

@@ -1,11 +1,11 @@
 -- START Project Table
-CREATE TYPE project_status AS ENUM ('ACTIVE', 'ARCHIVED');
+CREATE TYPE PROJECT_STATUS AS ENUM ('ACTIVE', 'ARCHIVED');
 CREATE TABLE projects
 (
     id          bigint PRIMARY KEY,
     name        VARCHAR(255) UNIQUE NOT NULL,
     description VARCHAR(255)        NOT NULL,
-    status      project_status      NOT NULL DEFAULT 'ACTIVE',
+    status      PROJECT_STATUS      NOT NULL DEFAULT 'ACTIVE',
     owner_id    bigint              NOT NULL,
     created_at  timestamptz         NOT NULL,
     updated_at  timestamptz,

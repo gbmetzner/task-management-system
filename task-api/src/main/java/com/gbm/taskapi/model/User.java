@@ -1,24 +1,18 @@
 package com.gbm.taskapi.model;
 
-import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
-import java.time.OffsetDateTime;
 import java.util.List;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "users", schema = "tms")
-@Data
-public class User {
-
-    @Id
-    @Tsid
-    @Column(name = "id", nullable = false, updatable = false, columnDefinition = "BIGINT")
-    private Long id;
+@Getter
+@Setter
+public class User extends BaseEntity {
 
     @Column(name = "email", unique = true, nullable = false, columnDefinition = "VARCHAR(255)")
     private String email;
@@ -37,27 +31,20 @@ public class User {
     @Column(name = "role", nullable = false, columnDefinition = "USER_ROLE")
     private Role role;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime updatedAt;
-
     @OneToMany(mappedBy = "assignee")
     private List<Task> assignedTasks;
 
     @OneToMany(mappedBy = "member")
     private List<ProjectMember> projectMemberships;
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = OffsetDateTime.now();
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User user)) return false;
+        return Objects.equals(getId(), user.getId());
     }
 
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = OffsetDateTime.now();
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
     }
 }

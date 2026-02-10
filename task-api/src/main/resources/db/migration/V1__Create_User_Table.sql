@@ -1,4 +1,4 @@
-CREATE TYPE role AS ENUM ('ADMIN', 'USER');
+CREATE TYPE USER_ROLE AS ENUM ('ADMIN', 'USER');
 CREATE TABLE users
 (
     id         bigint PRIMARY KEY,
@@ -6,7 +6,7 @@ CREATE TABLE users
     password   VARCHAR(255)        NOT NULL,
     firstname  VARCHAR(100),
     lastname   VARCHAR(100),
-    role       role                NOT NULL DEFAULT 'USER',
+    role       USER_ROLE                NOT NULL DEFAULT 'USER',
     created_at timestamptz         NOT NULL,
     updated_at timestamptz
 );

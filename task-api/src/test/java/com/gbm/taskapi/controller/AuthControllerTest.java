@@ -6,9 +6,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gbm.taskapi.config.HtmlEscapingSerializer;
 import com.gbm.taskapi.dto.request.LoginRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
 import com.gbm.taskapi.dto.response.AuthResponse;
+import com.gbm.taskapi.model.Role;
 import com.gbm.taskapi.security.JwtAuthenticationFilter;
 import com.gbm.taskapi.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
@@ -16,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(HtmlEscapingSerializer.class)
 class AuthControllerTest {
 
     @Autowired
@@ -40,7 +44,7 @@ class AuthControllerTest {
     void register_ShouldReturnCreated() throws Exception {
         // Given
         RegisterRequest request = new RegisterRequest("test@example.com", "password", "John", "Doe");
-        AuthResponse response = new AuthResponse("token", 1L, "test@example.com", "John", "Doe");
+        AuthResponse response = new AuthResponse("token", 1L, "test@example.com", "John", "Doe", Role.USER);
 
         when(authService.register(any(RegisterRequest.class))).thenReturn(response);
 
@@ -61,7 +65,7 @@ class AuthControllerTest {
     void login_ShouldReturnOk() throws Exception {
         // Given
         LoginRequest request = new LoginRequest("test@example.com", "password");
-        AuthResponse response = new AuthResponse("token", 1L, "test@example.com", "John", "Doe");
+        AuthResponse response = new AuthResponse("token", 1L, "test@example.com", "John", "Doe", Role.USER);
 
         when(authService.login(any(LoginRequest.class))).thenReturn(response);
 
@@ -98,5 +102,25 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should escape HTML in response fields")
+    void register_ShouldEscapeHtml() throws Exception {
+        // Given
+        RegisterRequest request =
+                new RegisterRequest("test@example.com", "password", "<b>John</b>", "<script>alert('Doe')</script>");
+        AuthResponse response = new AuthResponse(
+                "token", 1L, "test@example.com", "<b>John</b>", "<script>alert('Doe')</script>", Role.USER);
+
+        when(authService.register(any(RegisterRequest.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.firstName").value("&lt;b&gt;John&lt;/b&gt;"))
+                .andExpect(jsonPath("$.lastName").value("&lt;script&gt;alert(&#39;Doe&#39;)&lt;/script&gt;"));
     }
 }

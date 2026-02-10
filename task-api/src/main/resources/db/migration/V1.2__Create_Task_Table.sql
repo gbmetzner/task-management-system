@@ -1,13 +1,13 @@
-CREATE TYPE tasks_status AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
-CREATE TYPE tasks_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
+CREATE TYPE TASK_STATUS AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
+CREATE TYPE TASK_PRIORITY AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 
 CREATE TABLE tasks
 (
     id           bigint primary key,
     title        varchar(255)   not null,
     description  text,
-    status       tasks_status   not null default 'TODO',
-    priority     tasks_priority not null DEFAULT 'LOW',
+    status       TASK_STATUS   not null default 'TODO',
+    priority     TASK_PRIORITY not null DEFAULT 'LOW',
     created_at   timestamptz    not null,
     updated_at   timestamptz,
     completed_at timestamptz,

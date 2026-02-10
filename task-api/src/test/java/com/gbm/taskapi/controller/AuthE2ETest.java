@@ -105,4 +105,18 @@ class AuthE2ETest extends TestContainerSupport {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Invalid email or password"));
     }
+
+    @Test
+    @DisplayName("Should escape HTML in response fields")
+    void register_ShouldEscapeHtml() throws Exception {
+        // Given
+        RegisterRequest request = new RegisterRequest("html@example.com", "password", "<b>John</b>", "Doe");
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.firstName").value("&lt;b&gt;John&lt;/b&gt;"));
+    }
 }
