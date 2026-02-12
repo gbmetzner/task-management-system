@@ -143,6 +143,7 @@ build/
 ### VS Code ###
 .vscode/
 .DS_Store
+task-api/.env
 .claude
 CLAUDE.md
 /task-api/docs/.$database.drawio.bkp

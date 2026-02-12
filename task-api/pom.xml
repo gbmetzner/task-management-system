@@ -52,6 +52,14 @@
 			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>${jsonwebtoken.version}</version>
@@ -62,6 +70,10 @@
 			<artifactId>jjwt-impl</artifactId>
 			<version>${jsonwebtoken.version}</version>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -134,6 +146,12 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>1.21.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.redis</groupId>
+			<artifactId>testcontainers-redis</artifactId>
+			<version>2.2.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

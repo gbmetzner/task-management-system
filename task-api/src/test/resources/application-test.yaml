@@ -2,5 +2,5 @@ spring:
   flyway:
     clean-disabled: false
 jwt:
-  secret: ${JWT_SECRET:bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25UaGF0SXNBdExlYXN0MjU2Qml0c0xvbmVGb3JIUzI1NkFsZ29yaXRobQ==}
+  secret: ${JWT_SECRET:dGVzdC1vbmx5LXNlY3JldC1rZXktdGhhdC1pcy1sb25nLWVub3VnaC1mb3ItaG1hYy1zaGEyNTYtYWxnb3JpdGhtLTI1Ni1iaXRz}
   expiration: ${JWT_EXPIRATION:86400000}

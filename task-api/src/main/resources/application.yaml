@@ -14,6 +14,21 @@ spring:
     validate-on-migrate: true
     schemas: tms
     create-schemas: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 10000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  cache:
+    redis:
+      time-to-live: 3600000
+      cache-null-values: false
+
 jwt:
-  secret: ${JWT_SECRET:bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25UaGF0SXNBdExlYXN0MjU2Qml0c0xvbmVGb3JIUzI1NkFsZ29yaXRobQ==}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
