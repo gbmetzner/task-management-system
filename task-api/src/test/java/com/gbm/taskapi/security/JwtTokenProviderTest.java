@@ -2,7 +2,7 @@ package com.gbm.taskapi.security;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.gbm.taskapi.dto.TokenInfo;
+import com.gbm.taskapi.dto.TokenInfoDto;
 import com.gbm.taskapi.exception.InvalidTokenException;
 import com.gbm.taskapi.model.Role;
 import io.jsonwebtoken.Jwts;
@@ -28,8 +28,8 @@ class JwtTokenProviderTest {
         jwtTokenProvider = new JwtTokenProvider(SECRET, EXPIRATION);
     }
 
-    private TokenInfo defaultTokenInfo() {
-        return TokenInfo.builder()
+    private TokenInfoDto defaultTokenInfo() {
+        return TokenInfoDto.builder()
                 .userId(1L)
                 .email("test@example.com")
                 .role(Role.USER)
@@ -121,7 +121,7 @@ class JwtTokenProviderTest {
         @Test
         @DisplayName("Should extract different user IDs correctly")
         void shouldExtractDifferentUserIds() {
-            TokenInfo info = TokenInfo.builder()
+            TokenInfoDto info = TokenInfoDto.builder()
                     .userId(42L)
                     .email("other@example.com")
                     .role(Role.ADMIN)
@@ -145,19 +145,19 @@ class JwtTokenProviderTest {
 
     @Nested
     @DisplayName("getTokenInfoFromToken")
-    class GetTokenInfoFromToken {
+    class GetTokenInfoFromTokenDto {
 
         @Test
         @DisplayName("Should extract all fields from the token")
         void shouldExtractAllFields() {
-            TokenInfo original = TokenInfo.builder()
+            TokenInfoDto original = TokenInfoDto.builder()
                     .userId(99L)
                     .email("admin@example.com")
                     .role(Role.ADMIN)
                     .build();
             String token = jwtTokenProvider.generateToken(original);
 
-            TokenInfo extracted = jwtTokenProvider.getTokenInfoFromToken(token);
+            TokenInfoDto extracted = jwtTokenProvider.getTokenInfoFromToken(token);
 
             assertEquals(99L, extracted.userId());
             assertEquals("admin@example.com", extracted.email());
@@ -168,7 +168,7 @@ class JwtTokenProviderTest {
         @DisplayName("Should round-trip USER role correctly")
         void shouldRoundTripUserRole() {
             String token = generateValidToken();
-            TokenInfo extracted = jwtTokenProvider.getTokenInfoFromToken(token);
+            TokenInfoDto extracted = jwtTokenProvider.getTokenInfoFromToken(token);
             assertEquals(Role.USER, extracted.role());
         }
     }

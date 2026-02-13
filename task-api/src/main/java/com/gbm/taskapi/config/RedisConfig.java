@@ -48,6 +48,7 @@ public class RedisConfig {
                 .disableCachingNullValues();
 
         return RedisCacheManager.builder(connectionFactory)
+                .enableStatistics()
                 .cacheDefaults(config)
                 .build();
     }

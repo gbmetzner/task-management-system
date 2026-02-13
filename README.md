@@ -88,6 +88,29 @@ Tests use TestContainers, so Docker must be running:
 | POST | `/api/v1/auth/register` | Register a new user |
 | POST | `/api/v1/auth/login` | Login and receive a JWT token |
 
+## Caching Strategy
+
+The application uses Redis as a caching layer to reduce database load.
+
+### What is cached
+- **User lookups** — cached by ID and by email in the `users` cache (1-hour TTL)
+
+### Why not cache collections
+Entity relationships (tasks, project memberships) are lazy-loaded and change frequently. Caching them would serve stale data and cause serialization issues with Hibernate proxies. These are always fetched fresh from the database.
+
+### Design decisions
+- **DTOs, not entities** — JPA entities are mapped to `UserCacheDto` (via MapStruct) before caching, avoiding lazy-loading and serialization problems
+- **Cache warming** — an `ApplicationRunner` pre-loads all users into the cache on startup
+- **Cache monitoring** — a scheduled job logs cache hit/miss ratio every 10 seconds via Micrometer metrics
+- **Eviction** — cache entries are updated on user modification and evicted on deletion, keyed by both ID and email
+
+### Actuator endpoints
+Cache metrics are also available via Spring Boot Actuator:
+```
+GET /actuator/metrics/cache.gets?tag=result:hit&tag=cache:users
+GET /actuator/metrics/cache.gets?tag=result:miss&tag=cache:users
+```
+
 ## Database Schema
 
 All tables reside in the `tms` schema. Entity IDs use TSID (Time Sorted IDs).

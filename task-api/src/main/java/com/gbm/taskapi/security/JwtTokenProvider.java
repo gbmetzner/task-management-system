@@ -1,6 +1,6 @@
 package com.gbm.taskapi.security;
 
-import com.gbm.taskapi.dto.TokenInfo;
+import com.gbm.taskapi.dto.TokenInfoDto;
 import com.gbm.taskapi.exception.InvalidTokenException;
 import com.gbm.taskapi.model.Role;
 import io.jsonwebtoken.Jwts;
@@ -25,15 +25,15 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
-    public String generateToken(TokenInfo tokenInfo) {
-        log.debug("Generate token for user {}", tokenInfo.userId());
+    public String generateToken(TokenInfoDto tokenInfoDto) {
+        log.debug("Generate token for user {}", tokenInfoDto.userId());
         var now = new Date();
         var expiration = new Date(now.getTime() + jwtExpirationInMs);
         return Jwts.builder()
-                .subject(String.valueOf(tokenInfo.userId()))
+                .subject(String.valueOf(tokenInfoDto.userId()))
                 .claims()
-                .add("email", tokenInfo.email())
-                .add("role", tokenInfo.role().name())
+                .add("email", tokenInfoDto.email())
+                .add("role", tokenInfoDto.role().name())
                 .and()
                 .expiration(expiration)
                 .signWith(key)
@@ -56,13 +56,13 @@ public class JwtTokenProvider {
         return Long.parseLong(claims.getSubject());
     }
 
-    public TokenInfo getTokenInfoFromToken(String token) {
+    public TokenInfoDto getTokenInfoFromToken(String token) {
         var payload =
                 Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         var userId = Long.parseLong(payload.getSubject());
         var email = payload.get("email", String.class);
         var role = Role.valueOf(payload.get("role", String.class));
-        return TokenInfo.builder().userId(userId).email(email).role(role).build();
+        return TokenInfoDto.builder().userId(userId).email(email).role(role).build();
     }
 
     public String getEmailFromToken(String token) {
