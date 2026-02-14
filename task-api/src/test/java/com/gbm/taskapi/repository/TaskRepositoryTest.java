@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
 @Import(TaskAppConfig.class)
@@ -137,5 +139,83 @@ class TaskRepositoryTest extends TestContainerSupport {
         assertThat(todoTasks).hasSize(2);
         assertThat(inProgressTasks).hasSize(1);
         assertThat(doneTasks).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Should find tasks by project ID with assignee eagerly loaded")
+    void shouldFindByProjectIdWithAssignee() {
+        createTask("Task 1", project, assignee, TaskStatus.TODO);
+        createTask("Task 2", project, null, TaskStatus.IN_PROGRESS);
+        createTask("Other Project Task", otherProject, assignee, TaskStatus.TODO);
+
+        List<Task> tasks = taskRepository.findByProjectIdWithAssignee(project.getId());
+
+        assertThat(tasks).hasSize(2);
+        assertThat(tasks).allMatch(t -> t.getProject().getId().equals(project.getId()));
+        // Verify the assignee is eagerly loaded (no LazyInitializationException)
+        Task assignedTask =
+                tasks.stream().filter(t -> t.getAssignee() != null).findFirst().orElseThrow();
+        assertThat(assignedTask.getAssignee().getEmail()).isEqualTo("assignee@example.com");
+    }
+
+    @Test
+    @DisplayName("Should return empty list for findByProjectIdWithAssignee when project has no tasks")
+    void shouldReturnEmptyForFindByProjectIdWithAssigneeWhenNoTasks() {
+        List<Task> tasks = taskRepository.findByProjectIdWithAssignee(otherProject.getId());
+
+        assertThat(tasks).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return paginated tasks by project ID")
+    void shouldReturnPaginatedTasksByProjectId() {
+        createTask("Task 1", project, assignee, TaskStatus.TODO);
+        createTask("Task 2", project, null, TaskStatus.IN_PROGRESS);
+        createTask("Task 3", project, assignee, TaskStatus.DONE);
+
+        Page<Task> firstPage = taskRepository.findByProjectId(project.getId(), PageRequest.of(0, 2));
+        Page<Task> secondPage = taskRepository.findByProjectId(project.getId(), PageRequest.of(1, 2));
+
+        assertThat(firstPage.getContent()).hasSize(2);
+        assertThat(firstPage.getTotalElements()).isEqualTo(3);
+        assertThat(firstPage.getTotalPages()).isEqualTo(2);
+        assertThat(secondPage.getContent()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Should return empty page when project has no tasks")
+    void shouldReturnEmptyPageWhenProjectHasNoTasks() {
+        Page<Task> page = taskRepository.findByProjectId(otherProject.getId(), PageRequest.of(0, 10));
+
+        assertThat(page.getContent()).isEmpty();
+        assertThat(page.getTotalElements()).isZero();
+    }
+
+    @Test
+    @DisplayName("Should find all tasks with assignee and project eagerly loaded")
+    void shouldFindAllWithEagerLoading() {
+        createTask("Task 1", project, assignee, TaskStatus.TODO);
+        createTask("Task 2", otherProject, null, TaskStatus.IN_PROGRESS);
+
+        List<Task> tasks = taskRepository.findAll();
+
+        assertThat(tasks).hasSize(2);
+        // Verify relationships are eagerly loaded
+        Task assignedTask =
+                tasks.stream().filter(t -> t.getAssignee() != null).findFirst().orElseThrow();
+        assertThat(assignedTask.getAssignee().getEmail()).isEqualTo("assignee@example.com");
+        assertThat(assignedTask.getProject().getName()).isEqualTo("Project A");
+    }
+
+    @Test
+    @DisplayName("Should find task by ID with assignee and project eagerly loaded")
+    void shouldFindByIdWithEagerLoading() {
+        Task saved = createTask("Eager Task", project, assignee, TaskStatus.TODO);
+
+        Task found = taskRepository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getTitle()).isEqualTo("Eager Task");
+        assertThat(found.getAssignee().getEmail()).isEqualTo("assignee@example.com");
+        assertThat(found.getProject().getName()).isEqualTo("Project A");
     }
 }

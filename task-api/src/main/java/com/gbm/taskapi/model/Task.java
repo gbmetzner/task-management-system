@@ -10,9 +10,19 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "tasks", schema = "tms")
 @Getter
 @Setter
+@Table(
+        name = "tasks",
+        schema = "tms",
+        indexes = {
+            @Index(name = "idx_task_project_id", columnList = "project_id"),
+            @Index(name = "idx_task_assignee_id", columnList = "assignee_id"),
+            @Index(name = "idx_task_status", columnList = "status"),
+            @Index(name = "idx_task_priority", columnList = "priority"),
+            @Index(name = "idx_task_due_date", columnList = "due_date"),
+            @Index(name = "idx_task_created_at", columnList = "created_at")
+        })
 public class Task extends BaseEntity {
 
     @Column(name = "title", nullable = false, columnDefinition = "VARCHAR(255)")

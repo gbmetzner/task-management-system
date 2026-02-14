@@ -7,6 +7,15 @@ spring:
     url: jdbc:postgresql://localhost:5432/task-db
     username: postgres
     password: postgres
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 2000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      pool-name: TaskAPIPool
+      connection-test-query: SELECT 1
+      register-mbeans: true
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -32,3 +41,15 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,caches
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    enable:
+      hikaricp: true

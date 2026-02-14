@@ -3,6 +3,9 @@ spring:
     clean-disabled: false
   jpa:
     show-sql: true
+  datasource:
+    hikari:
+      leak-detection-threshold: 60000
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
