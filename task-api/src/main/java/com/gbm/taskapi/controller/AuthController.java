@@ -5,9 +5,9 @@ import static org.springframework.http.ResponseEntity.*;
 import com.gbm.taskapi.dto.request.LoginRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
 import com.gbm.taskapi.dto.response.AuthResponse;
+import com.gbm.taskapi.helper.UserMapper;
 import com.gbm.taskapi.service.AuthService;
 import jakarta.validation.Valid;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,14 +22,17 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserMapper userMapper;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+        var result = authService.register(request);
+        var response = userMapper.toAuthResponse(result);
+
+        var location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/v1/users/{id}")
-                .buildAndExpand(response.userId())
+                .buildAndExpand(result.userId())
                 .toUri();
 
         return created(location).body(response);
@@ -37,7 +40,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+        var result = authService.login(request);
+        var response = userMapper.toAuthResponse(result);
 
         return ok(response);
     }

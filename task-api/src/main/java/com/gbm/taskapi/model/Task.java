@@ -1,7 +1,7 @@
 package com.gbm.taskapi.model;
 
 import jakarta.persistence.*;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
@@ -54,10 +54,10 @@ public class Task extends BaseEntity {
     private TaskPriority priority;
 
     @Column(name = "due_date", columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime dueDate;
+    private Instant dueDate;
 
     @Column(name = "completed_at", columnDefinition = "TIMESTAMPTZ")
-    private OffsetDateTime completedAt;
+    private Instant completedAt;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     private List<Comment> comments;

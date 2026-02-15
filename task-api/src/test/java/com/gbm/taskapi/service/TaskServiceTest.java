@@ -3,10 +3,14 @@ package com.gbm.taskapi.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gbm.taskapi.TestContainerSupport;
+import com.gbm.taskapi.dto.request.CreateTaskRequest;
+import com.gbm.taskapi.dto.request.UpdateTaskRequest;
+import com.gbm.taskapi.dto.service.TaskResult;
 import com.gbm.taskapi.model.*;
 import com.gbm.taskapi.repository.ProjectRepository;
 import com.gbm.taskapi.repository.TaskRepository;
 import com.gbm.taskapi.repository.UserRepository;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 // @Transactional keeps the Hibernate session open during cache serialization.
@@ -57,6 +64,10 @@ class TaskServiceTest extends TestContainerSupport {
         reporter.setRole(Role.USER);
         reporter = userRepository.save(reporter);
 
+        var auth = new UsernamePasswordAuthenticationToken(
+                reporter.getId(), null, Collections.singletonList(new SimpleGrantedAuthority(Role.USER.name())));
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         project = new Project();
         project.setName("Test Project");
         project.setDescription("Test Description");
@@ -80,16 +91,16 @@ class TaskServiceTest extends TestContainerSupport {
     void shouldFindTaskById() {
         Task saved = saveTask("Find Me");
 
-        Optional<Task> result = taskService.findById(saved.getId());
+        Optional<TaskResult> result = taskService.findById(saved.getId());
 
         assertThat(result).isPresent();
-        assertThat(result.get().getTitle()).isEqualTo("Find Me");
+        assertThat(result.get().title()).isEqualTo("Find Me");
     }
 
     @Test
     @DisplayName("Should return empty when task not found")
     void shouldReturnEmptyWhenTaskNotFound() {
-        Optional<Task> result = taskService.findById(999999L);
+        Optional<TaskResult> result = taskService.findById(999999L);
 
         assertThat(result).isEmpty();
     }
@@ -115,7 +126,7 @@ class TaskServiceTest extends TestContainerSupport {
         saveTask("Task 1");
         saveTask("Task 2");
 
-        List<Task> tasks = taskService.findByProjectId(project.getId());
+        List<TaskResult> tasks = taskService.findByProjectId(project.getId());
 
         assertThat(tasks).hasSize(2);
     }
@@ -147,18 +158,16 @@ class TaskServiceTest extends TestContainerSupport {
     @Test
     @DisplayName("Should create task successfully")
     void shouldCreateTask() {
-        Task newTask = new Task();
-        newTask.setTitle("New Task");
-        newTask.setProject(project);
-        newTask.setReporter(reporter);
-        newTask.setStatus(TaskStatus.TODO);
-        newTask.setPriority(TaskPriority.MEDIUM);
+        var request = new CreateTaskRequest("New Task", null, project.getId(), null, null, null, null);
 
-        Task created = taskService.createTask(newTask);
+        TaskResult created = taskService.createTask(request);
 
-        assertThat(created.getId()).isNotNull();
-        assertThat(created.getTitle()).isEqualTo("New Task");
-        assertThat(taskRepository.findById(created.getId())).isPresent();
+        assertThat(created.id()).isNotNull();
+        assertThat(created.title()).isEqualTo("New Task");
+        assertThat(created.status()).isEqualTo(TaskStatus.TODO);
+        assertThat(created.priority()).isEqualTo(TaskPriority.MEDIUM);
+        assertThat(created.project().id()).isEqualTo(project.getId());
+        assertThat(taskRepository.findById(created.id())).isPresent();
     }
 
     @Test
@@ -167,9 +176,10 @@ class TaskServiceTest extends TestContainerSupport {
         Task saved = saveTask("Original");
         taskService.findById(saved.getId());
 
-        saved.setTitle("Updated");
-        taskService.updateTask(saved);
+        var request = new UpdateTaskRequest("Updated", null, null, null, null, null);
+        TaskResult updated = taskService.updateTask(saved.getId(), request);
 
+        assertThat(updated.title()).isEqualTo("Updated");
         var cached = cacheManager.getCache("tasks").get(saved.getId());
         assertThat(cached).isNull();
     }

@@ -1,6 +1,7 @@
 package com.gbm.taskapi.repository;
 
 import com.gbm.taskapi.model.Task;
+import com.gbm.taskapi.model.TaskPriority;
 import com.gbm.taskapi.model.TaskStatus;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,23 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             countQuery = "SELECT COUNT(t) FROM Task t WHERE t.project.id = :projectId")
     Page<Task> findByProjectId(@Param("projectId") Long projectId, Pageable pageable);
 
-    // Find all tasks with assignee (no N+1)
+    // New: Complex search with multiple optional filters
+    @Query("SELECT DISTINCT t FROM Task t " + "LEFT JOIN FETCH t.assignee "
+            + "LEFT JOIN FETCH t.project "
+            + "WHERE (:keyword IS NULL OR "
+            + "      LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+            + "      LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+            + "AND (:status IS NULL OR t.status = :status) "
+            + "AND (:priority IS NULL OR t.priority = :priority) "
+            + "AND (:assigneeId IS NULL OR t.assignee.id = :assigneeId)")
+    Page<Task> searchTasks(
+            @Param("keyword") String keyword,
+            @Param("status") TaskStatus status,
+            @Param("priority") TaskPriority priority,
+            @Param("assigneeId") Long assigneeId,
+            Pageable pageable);
+
+    // Find all tasks with an assignee (no N+1)
     @EntityGraph(attributePaths = {"assignee", "project"})
     @NullMarked
     List<Task> findAll();

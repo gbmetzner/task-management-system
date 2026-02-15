@@ -9,7 +9,8 @@ import com.gbm.taskapi.TaskApiApplication;
 import com.gbm.taskapi.config.HtmlEscapingSerializer;
 import com.gbm.taskapi.dto.request.LoginRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
-import com.gbm.taskapi.dto.response.AuthResponse;
+import com.gbm.taskapi.dto.service.AuthResult;
+import com.gbm.taskapi.helper.UserMapperImpl;
 import com.gbm.taskapi.model.Role;
 import com.gbm.taskapi.security.JwtAuthenticationFilter;
 import com.gbm.taskapi.service.AuthService;
@@ -26,7 +27,7 @@ import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({HtmlEscapingSerializer.class, TaskApiApplication.class})
+@Import({HtmlEscapingSerializer.class, TaskApiApplication.class, UserMapperImpl.class})
 class AuthControllerTest {
 
     @Autowired
@@ -46,9 +47,9 @@ class AuthControllerTest {
     void register_ShouldReturnCreated() throws Exception {
         // Given
         RegisterRequest request = new RegisterRequest("test@example.com", "password", "John", "Doe");
-        AuthResponse response = new AuthResponse("token", 1L, "test@example.com", "John", "Doe", Role.USER);
+        AuthResult result = new AuthResult("token", 1L, "test@example.com", "John", "Doe", Role.USER);
 
-        when(authService.register(any(RegisterRequest.class))).thenReturn(response);
+        when(authService.register(any(RegisterRequest.class))).thenReturn(result);
 
         // When & Then
         mockMvc.perform(post("/api/v1/auth/register")
@@ -57,6 +58,7 @@ class AuthControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.token").value("token"))
+                .andExpect(jsonPath("$.type").value("Bearer"))
                 .andExpect(jsonPath("$.email").value("test@example.com"))
                 .andExpect(jsonPath("$.firstName").value("John"))
                 .andExpect(jsonPath("$.lastName").value("Doe"));
@@ -67,9 +69,9 @@ class AuthControllerTest {
     void login_ShouldReturnOk() throws Exception {
         // Given
         LoginRequest request = new LoginRequest("test@example.com", "password");
-        AuthResponse response = new AuthResponse("token", 1L, "test@example.com", "John", "Doe", Role.USER);
+        AuthResult result = new AuthResult("token", 1L, "test@example.com", "John", "Doe", Role.USER);
 
-        when(authService.login(any(LoginRequest.class))).thenReturn(response);
+        when(authService.login(any(LoginRequest.class))).thenReturn(result);
 
         // When & Then
         mockMvc.perform(post("/api/v1/auth/login")
@@ -77,6 +79,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("token"))
+                .andExpect(jsonPath("$.type").value("Bearer"))
                 .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
@@ -112,10 +115,10 @@ class AuthControllerTest {
         // Given
         RegisterRequest request =
                 new RegisterRequest("test@example.com", "password", "<b>John</b>", "<script>alert('Doe')</script>");
-        AuthResponse response = new AuthResponse(
+        AuthResult result = new AuthResult(
                 "token", 1L, "test@example.com", "<b>John</b>", "<script>alert('Doe')</script>", Role.USER);
 
-        when(authService.register(any(RegisterRequest.class))).thenReturn(response);
+        when(authService.register(any(RegisterRequest.class))).thenReturn(result);
 
         // When & Then
         mockMvc.perform(post("/api/v1/auth/register")
