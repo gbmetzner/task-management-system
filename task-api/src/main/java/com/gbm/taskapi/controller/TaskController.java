@@ -1,18 +1,17 @@
 package com.gbm.taskapi.controller;
 
 import com.gbm.taskapi.dto.request.CreateTaskRequest;
+import com.gbm.taskapi.dto.request.TaskSearchRequest;
 import com.gbm.taskapi.dto.request.UpdateTaskRequest;
 import com.gbm.taskapi.dto.response.TaskResponse;
+import com.gbm.taskapi.exception.ResourceNotFoundException;
 import com.gbm.taskapi.helper.TaskMapper;
-import com.gbm.taskapi.model.TaskPriority;
-import com.gbm.taskapi.model.TaskStatus;
 import com.gbm.taskapi.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,7 +24,7 @@ public class TaskController {
     private final TaskService taskService;
     private final TaskMapper taskMapper;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request) {
         var result = taskService.createTask(request);
         var taskResponse = taskMapper.toTaskResponse(result);
@@ -40,8 +39,9 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
-        return ResponseEntity.ok(
-                taskMapper.toTaskResponse(taskService.findById(id).orElseThrow()));
+        return ResponseEntity.ok(taskMapper.toTaskResponse(taskService
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " not found"))));
     }
 
     @DeleteMapping("/{id}")
@@ -59,23 +59,10 @@ public class TaskController {
 
     @GetMapping("/search")
     public ResponseEntity<Page<TaskResponse>> searchTasks(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) TaskStatus status,
-            @RequestParam(required = false) TaskPriority priority,
-            @RequestParam(required = false) Long assigneeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDir) {
-
-        Sort sort = sortDir.equalsIgnoreCase("ASC")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+            TaskSearchRequest request, @PageableDefault Pageable pageable) {
 
         var tasks = taskService
-                .searchTasks(keyword, status, priority, assigneeId, pageable)
+                .searchTasks(request.keyword(), request.status(), request.priority(), request.assigneeId(), pageable)
                 .map(taskMapper::toTaskResponse);
 
         return ResponseEntity.ok(tasks);
