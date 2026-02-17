@@ -1,8 +1,7 @@
 package com.gbm.taskapi.controller;
 
-import static org.springframework.http.ResponseEntity.*;
-
 import com.gbm.taskapi.dto.request.LoginRequest;
+import com.gbm.taskapi.dto.request.RefreshTokenRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
 import com.gbm.taskapi.dto.response.AuthResponse;
 import com.gbm.taskapi.helper.UserMapper;
@@ -35,7 +34,7 @@ public class AuthController {
                 .buildAndExpand(result.userId())
                 .toUri();
 
-        return created(location).body(response);
+        return ResponseEntity.created(location).body(response);
     }
 
     @PostMapping("/login")
@@ -43,6 +42,13 @@ public class AuthController {
         var result = authService.login(request);
         var response = userMapper.toAuthResponse(result);
 
-        return ok(response);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        var result = authService.refreshToken(request.refreshToken());
+        var response = userMapper.toAuthResponse(result);
+        return ResponseEntity.ok(response);
     }
 }

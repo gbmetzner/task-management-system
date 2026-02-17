@@ -3,15 +3,23 @@ package com.gbm.taskapi.dto.response;
 import com.gbm.taskapi.model.Role;
 
 public record AuthResponse(
-        String token,
+        String accessToken,
         String type, // Always "Bearer"
+        String refreshToken,
         Long userId,
         String email,
         String firstName,
         String lastName,
         Role role) {
 
-    public AuthResponse(String token, Long userId, String email, String firstName, String lastName, Role role) {
-        this(token, "Bearer", userId, email, firstName, lastName, role);
+    public AuthResponse(
+            String accessToken,
+            String refreshToken,
+            Long userId,
+            String email,
+            String firstName,
+            String lastName,
+            Role role) {
+        this(accessToken, "Bearer", refreshToken, userId, email, firstName, lastName, role);
     }
 }

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gbm.taskapi.TestContainerSupport;
 import com.gbm.taskapi.dto.request.LoginRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
@@ -18,6 +17,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,7 +29,8 @@ class AuthE2ETest extends TestContainerSupport {
     @Autowired
     private UserRepository userRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +48,7 @@ class AuthE2ETest extends TestContainerSupport {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
-                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.email").value("e2e@example.com"))
                 .andExpect(jsonPath("$.firstName").value("E2E"))
                 .andExpect(jsonPath("$.lastName").value("Tester"))
@@ -63,7 +64,7 @@ class AuthE2ETest extends TestContainerSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.email").value("e2e@example.com"));
     }
 
@@ -117,6 +118,6 @@ class AuthE2ETest extends TestContainerSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.firstName").value("&lt;b&gt;John&lt;/b&gt;"));
+                .andExpect(jsonPath("$.firstName").value("&amp;lt;b&amp;gt;John&amp;lt;/b&amp;gt;"));
     }
 }

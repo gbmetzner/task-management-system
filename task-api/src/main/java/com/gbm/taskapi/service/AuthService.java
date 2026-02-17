@@ -1,6 +1,5 @@
 package com.gbm.taskapi.service;
 
-import com.gbm.taskapi.dto.TokenInfoDto;
 import com.gbm.taskapi.dto.request.LoginRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
 import com.gbm.taskapi.dto.service.AuthResult;
@@ -23,6 +22,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserMapper userMapper;
+    private final RefreshTokenHelper refreshTokenHelper;
 
     @Transactional
     public AuthResult register(RegisterRequest request) {
@@ -31,39 +31,39 @@ public class AuthService {
             throw new BadRequestException("Email already exists");
         }
 
-        User user = userMapper.toUser(request);
+        var user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
 
-        User savedUser = userRepository.save(user);
+        var savedUser = userRepository.save(user);
 
-        String token = generateToken(savedUser);
-
-        return toAuthResult(token, savedUser);
+        return buildAuthResult(savedUser);
     }
 
     public AuthResult login(LoginRequest request) {
-        User user = userRepository
+        var user = userRepository
                 .findByEmail(request.email())
                 .filter(found -> (passwordEncoder.matches(request.password(), found.getPassword())))
                 .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
-        String token = generateToken(user);
-
-        return toAuthResult(token, user);
+        return buildAuthResult(user);
     }
 
-    private String generateToken(User user) {
-        var tokenInfo = TokenInfoDto.builder()
-                .userId(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+    @Transactional
+    public AuthResult refreshToken(String token) {
+        var newRefreshToken = refreshTokenHelper.rotateRefreshToken(token);
+        var user = newRefreshToken.getUser();
+        return userMapper.toAuthResult(token, newRefreshToken.getToken(), user);
+    }
+
+    private AuthResult buildAuthResult(User user) {
+        var accessToken = generateAccessToken(user);
+        var refreshToken = refreshTokenHelper.createRefreshToken(user);
+        return userMapper.toAuthResult(accessToken, refreshToken.getToken(), user);
+    }
+
+    private String generateAccessToken(User user) {
+        var tokenInfo = userMapper.toTokenInfoDto(user);
         return jwtTokenProvider.generateToken(tokenInfo);
-    }
-
-    private AuthResult toAuthResult(String token, User user) {
-        return new AuthResult(
-                token, user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.getRole());
     }
 }

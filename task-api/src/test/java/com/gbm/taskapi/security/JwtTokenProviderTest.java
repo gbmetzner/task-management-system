@@ -45,7 +45,7 @@ class JwtTokenProviderTest {
     class GenerateToken {
 
         @Test
-        @DisplayName("Should return a non-empty token")
+        @DisplayName("Should return a non-empty accessToken")
         void shouldReturnNonEmptyToken() {
             String token = generateValidToken();
             assertNotNull(token);
@@ -65,7 +65,7 @@ class JwtTokenProviderTest {
     class ValidateToken {
 
         @Test
-        @DisplayName("Should return true for a valid token")
+        @DisplayName("Should return true for a valid accessToken")
         void shouldReturnTrueForValidToken() {
             String token = generateValidToken();
 
@@ -73,7 +73,7 @@ class JwtTokenProviderTest {
         }
 
         @Test
-        @DisplayName("Should return false for a tampered token")
+        @DisplayName("Should return false for a tampered accessToken")
         void shouldReturnFalseForTamperedToken() {
             String token = generateValidToken();
             String tampered = token.substring(0, token.length() - 5) + "XXXXX";
@@ -81,7 +81,7 @@ class JwtTokenProviderTest {
         }
 
         @Test
-        @DisplayName("Should return false for a token signed with a different key")
+        @DisplayName("Should return false for a accessToken signed with a different key")
         void shouldReturnFalseForWrongKey() {
             SecretKey otherKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(
                     "YW5vdGhlclNlY3JldEtleVRoYXRJc0RpZmZlcmVudEZyb21UaGVPcmlnaW5hbE9uZUZvclRlc3Rpbmc="));
@@ -90,7 +90,7 @@ class JwtTokenProviderTest {
         }
 
         @Test
-        @DisplayName("Should return false for an expired token")
+        @DisplayName("Should return false for an expired accessToken")
         void shouldReturnFalseForExpiredToken() {
             String expiredToken = Jwts.builder()
                     .subject("1")
@@ -112,7 +112,7 @@ class JwtTokenProviderTest {
     class GetUserIdFromToken {
 
         @Test
-        @DisplayName("Should extract the user ID from the token subject")
+        @DisplayName("Should extract the user ID from the accessToken subject")
         void shouldExtractUserId() {
             String token = generateValidToken();
             assertEquals(1L, jwtTokenProvider.getUserIdFromToken(token));
@@ -148,7 +148,7 @@ class JwtTokenProviderTest {
     class GetTokenInfoFromTokenDto {
 
         @Test
-        @DisplayName("Should extract all fields from the token")
+        @DisplayName("Should extract all fields from the accessToken")
         void shouldExtractAllFields() {
             TokenInfoDto original = TokenInfoDto.builder()
                     .userId(99L)

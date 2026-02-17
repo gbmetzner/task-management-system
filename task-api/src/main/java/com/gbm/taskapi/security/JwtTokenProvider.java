@@ -26,7 +26,7 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(TokenInfoDto tokenInfoDto) {
-        log.debug("Generate token for user {}", tokenInfoDto.userId());
+        log.debug("Generate accessToken for user {}", tokenInfoDto.userId());
         var now = new Date();
         var expiration = new Date(now.getTime() + jwtExpirationInMs);
         return Jwts.builder()
@@ -41,12 +41,12 @@ public class JwtTokenProvider {
     }
 
     public void validateToken(String token) {
-        log.debug("Validate token {}...", token.substring(0, Math.min(token.length(), 10)));
+        log.debug("Validate accessToken {}...", token.substring(0, Math.min(token.length(), 10)));
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
         } catch (Exception e) {
-            log.error("Invalid JWT token", e);
-            throw new InvalidTokenException("Invalid JWT token");
+            log.error("Invalid JWT accessToken", e);
+            throw new InvalidTokenException("Invalid JWT accessToken");
         }
     }
 

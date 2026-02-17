@@ -1,6 +1,7 @@
 package com.gbm.taskapi.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -8,8 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.gbm.taskapi.TaskApiApplication;
 import com.gbm.taskapi.config.HtmlEscapingSerializer;
 import com.gbm.taskapi.dto.request.LoginRequest;
+import com.gbm.taskapi.dto.request.RefreshTokenRequest;
 import com.gbm.taskapi.dto.request.RegisterRequest;
 import com.gbm.taskapi.dto.service.AuthResult;
+import com.gbm.taskapi.exception.InvalidTokenException;
 import com.gbm.taskapi.helper.UserMapperImpl;
 import com.gbm.taskapi.model.Role;
 import com.gbm.taskapi.security.JwtAuthenticationFilter;
@@ -47,7 +50,8 @@ class AuthControllerTest {
     void register_ShouldReturnCreated() throws Exception {
         // Given
         RegisterRequest request = new RegisterRequest("test@example.com", "password", "John", "Doe");
-        AuthResult result = new AuthResult("token", 1L, "test@example.com", "John", "Doe", Role.USER);
+        AuthResult result =
+                new AuthResult("accessToken", "refreshToken", 1L, "test@example.com", "John", "Doe", Role.USER);
 
         when(authService.register(any(RegisterRequest.class))).thenReturn(result);
 
@@ -57,7 +61,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
-                .andExpect(jsonPath("$.token").value("token"))
+                .andExpect(jsonPath("$.accessToken").value("accessToken"))
                 .andExpect(jsonPath("$.type").value("Bearer"))
                 .andExpect(jsonPath("$.email").value("test@example.com"))
                 .andExpect(jsonPath("$.firstName").value("John"))
@@ -69,7 +73,8 @@ class AuthControllerTest {
     void login_ShouldReturnOk() throws Exception {
         // Given
         LoginRequest request = new LoginRequest("test@example.com", "password");
-        AuthResult result = new AuthResult("token", 1L, "test@example.com", "John", "Doe", Role.USER);
+        AuthResult result =
+                new AuthResult("accessToken", "refreshToken", 1L, "test@example.com", "John", "Doe", Role.USER);
 
         when(authService.login(any(LoginRequest.class))).thenReturn(result);
 
@@ -78,7 +83,7 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("token"))
+                .andExpect(jsonPath("$.accessToken").value("accessToken"))
                 .andExpect(jsonPath("$.type").value("Bearer"))
                 .andExpect(jsonPath("$.email").value("test@example.com"));
     }
@@ -116,7 +121,13 @@ class AuthControllerTest {
         RegisterRequest request =
                 new RegisterRequest("test@example.com", "password", "<b>John</b>", "<script>alert('Doe')</script>");
         AuthResult result = new AuthResult(
-                "token", 1L, "test@example.com", "<b>John</b>", "<script>alert('Doe')</script>", Role.USER);
+                "accessToken",
+                "refreshToken",
+                1L,
+                "test@example.com",
+                "<b>John</b>",
+                "<script>alert('Doe')</script>",
+                Role.USER);
 
         when(authService.register(any(RegisterRequest.class))).thenReturn(result);
 
@@ -127,5 +138,54 @@ class AuthControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.firstName").value("&lt;b&gt;John&lt;/b&gt;"))
                 .andExpect(jsonPath("$.lastName").value("&lt;script&gt;alert(&#39;Doe&#39;)&lt;/script&gt;"));
+    }
+
+    @Test
+    @DisplayName("Should refresh token successfully")
+    void refresh_ShouldReturnOk() throws Exception {
+        // Given
+        RefreshTokenRequest request = new RefreshTokenRequest("valid-refresh-token");
+        AuthResult result =
+                new AuthResult("newAccessToken", "newRefreshToken", 1L, "test@example.com", "John", "Doe", Role.USER);
+
+        when(authService.refreshToken(anyString())).thenReturn(result);
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("newAccessToken"))
+                .andExpect(jsonPath("$.refreshToken").value("newRefreshToken"))
+                .andExpect(jsonPath("$.type").value("Bearer"))
+                .andExpect(jsonPath("$.email").value("test@example.com"));
+    }
+
+    @Test
+    @DisplayName("Should return 401 when refresh token is invalid")
+    void refresh_ShouldReturnUnauthorized_WhenTokenInvalid() throws Exception {
+        // Given
+        RefreshTokenRequest request = new RefreshTokenRequest("invalid-token");
+
+        when(authService.refreshToken(anyString())).thenThrow(new InvalidTokenException("Token not found"));
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when refresh token is blank")
+    void refresh_ShouldReturnBadRequest_WhenTokenBlank() throws Exception {
+        // Given
+        RefreshTokenRequest request = new RefreshTokenRequest("");
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
     }
 }
