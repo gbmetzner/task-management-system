@@ -56,6 +56,11 @@ public class AuthService {
         return userMapper.toAuthResult(token, newRefreshToken.getToken(), user);
     }
 
+    @Transactional
+    public void logout(Long userId) {
+        refreshTokenHelper.revokeRefreshTokensForUser(userId);
+    }
+
     private AuthResult buildAuthResult(User user) {
         var accessToken = generateAccessToken(user);
         var refreshToken = refreshTokenHelper.createRefreshToken(user);

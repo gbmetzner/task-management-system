@@ -26,7 +26,8 @@ public class SecurityConfig {
                         xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK)))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**")
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh")
                         .permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
                         .permitAll()

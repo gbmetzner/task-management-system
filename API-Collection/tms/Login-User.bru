@@ -10,6 +10,10 @@ post {
   auth: inherit
 }
 
+headers {
+  : 
+}
+
 body:json {
   {
     "email": "john@example.com",
@@ -18,7 +22,7 @@ body:json {
 }
 
 vars:post-response {
-  auth-token: .*"token": .*
+  accessToken: "accessToken"\s*:\s*"([^"]+)"
 }
 
 settings {

@@ -7,8 +7,10 @@ import com.gbm.taskapi.dto.response.AuthResponse;
 import com.gbm.taskapi.helper.UserMapper;
 import com.gbm.taskapi.service.AuthService;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,5 +52,14 @@ public class AuthController {
         var result = authService.refreshToken(request.refreshToken());
         var response = userMapper.toAuthResponse(result);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        var userId =
+                (Long) Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication())
+                        .getPrincipal();
+        authService.logout(userId);
+        return ResponseEntity.noContent().build();
     }
 }
